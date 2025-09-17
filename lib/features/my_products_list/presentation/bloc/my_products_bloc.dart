@@ -443,6 +443,8 @@ class MyProductsBloc extends Bloc<MyProductsEvent, MyProductsState> {
         imageQuality: 80,
         maxWidth: 1024,
         maxHeight: 1024,
+        // This enables the Android photo picker on Android 13+ (API 33+)
+        requestFullMetadata: false,
       );
 
       if (image != null) {
@@ -467,6 +469,8 @@ class MyProductsBloc extends Bloc<MyProductsEvent, MyProductsState> {
         imageQuality: 80,
         maxWidth: 1024,
         maxHeight: 1024,
+        // This enables the Android photo picker on Android 13+ (API 33+)
+        requestFullMetadata: false,
       );
 
       if (image != null) {
