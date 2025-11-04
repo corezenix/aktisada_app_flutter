@@ -170,7 +170,12 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         MapEntry('item_size', productData['size'] ?? ''),
         MapEntry('item_size_id', productData['item_size_id'] ?? ''),
         MapEntry('quantity', productData['quantity'] ?? ''),
-        MapEntry('description', (productData['description'] != null ? productData['description'].toString() : '')),
+        MapEntry(
+          'description',
+          (productData['description'] != null
+              ? productData['description'].toString()
+              : ''),
+        ),
       ]);
 
       // Add image file if present
@@ -388,8 +393,10 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         options: Options(headers: {'Accept': 'application/json'}),
       );
 
+      print("edit product response: ${response.data}");
       if (response.statusCode == 200) {
         final data = response.data['data'] as List<dynamic>;
+
         return data.map((product) => ProductModel.fromJson(product)).toList();
       } else {
         throw Exception(
@@ -412,31 +419,80 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       print('   Product Data: $productData');
       print('   Endpoint: ${ApiEndpoints.updateProduct}');
 
-      // Transform the data to match the API structure
-      final transformedData = <String, dynamic>{
-        'product_id': productData['product_id'] ?? '',
-        'product_title': productData['name'] ?? '',
-        'user_id': productData['user_id'] ?? '',
-        'category_id': productData['category_id'] ?? '',
-        'brand_id': productData['brand_id'] ?? '',
-        'type_id': productData['type_id'] ?? '',
-        'material_id': productData['material_id'] ?? '',
-        'item_size': productData['size'] ?? '',
-        'item_size_id': productData['item_size_id'] ?? '',
-        'quantity': productData['quantity'] ?? '',
-        'description': (productData['description'] != null && productData['description'].toString().isNotEmpty)
-            ? productData['description']
-            : '',
-      };
+      // Create FormData for multipart upload (same as addProduct)
+      final formData = FormData();
 
-      print('   Transformed Data: $transformedData');
+      // Add text fields
+      formData.fields.addAll([
+        MapEntry('product_id', productData['product_id'] ?? ''),
+        MapEntry('product_title', productData['name'] ?? ''),
+        MapEntry('user_id', productData['user_id'] ?? ''),
+        MapEntry('category_id', productData['category_id'] ?? ''),
+        MapEntry('brand_id', productData['brand_id'] ?? ''),
+        MapEntry('type_id', productData['type_id'] ?? ''),
+        MapEntry('material_id', productData['material_id'] ?? ''),
+        MapEntry('item_size', productData['size'] ?? ''),
+        MapEntry('item_size_id', productData['item_size_id'] ?? ''),
+        MapEntry('quantity', productData['quantity'] ?? ''),
+        MapEntry(
+          'description',
+          (productData['description'] != null &&
+                  productData['description'].toString().isNotEmpty)
+              ? productData['description'].toString()
+              : '',
+        ),
+      ]);
 
-      final formData = FormData.fromMap(transformedData);
+      // Add image file if present
+      if (productData['image_file'] != null &&
+          productData['image_file'] != '') {
+        final imageFile = productData['image_file'];
+        print('   Image File: $imageFile');
+        print('   Image File Type: ${imageFile.runtimeType}');
+
+        if (imageFile is File) {
+          // Handle File object
+          formData.files.add(
+            MapEntry(
+              'image_file',
+              await MultipartFile.fromFile(
+                imageFile.path,
+                filename: imageFile.path.split('/').last,
+              ),
+            ),
+          );
+          print('   Image added as MultipartFile: ${imageFile.path}');
+        } else if (imageFile is String && imageFile.isNotEmpty) {
+          // Handle file path string
+          final file = File(imageFile);
+          if (await file.exists()) {
+            formData.files.add(
+              MapEntry(
+                'image_file',
+                await MultipartFile.fromFile(
+                  imageFile,
+                  filename: imageFile.split('/').last,
+                ),
+              ),
+            );
+            print('   Image added as MultipartFile from path: $imageFile');
+          } else {
+            print('   Warning: Image file does not exist at path: $imageFile');
+          }
+        } else {
+          print('   Warning: Invalid image file format: $imageFile');
+        }
+      } else {
+        print('   No image file provided - updating without new image');
+      }
+
+      print('   FormData fields: ${formData.fields.length}');
+      print('   FormData files: ${formData.files.length}');
 
       final response = await dio.post(
         ApiEndpoints.updateProduct,
         data: formData,
-        options: Options(headers: {'Accept': 'application/json'}),
+        options: Options(headers: {'Accept': 'application/ecmascript'}),
       );
 
       if (response.statusCode == 200) {

@@ -29,7 +29,7 @@ class ImageService {
     }
   }
 
-  // Pick image from gallery using Android photo picker
+  // Pick image from gallery
   static Future<File?> pickImageFromGallery() async {
     try {
       final XFile? image = await _imagePicker.pickImage(
@@ -37,9 +37,6 @@ class ImageService {
         imageQuality: 80,
         maxWidth: 1024,
         maxHeight: 1024,
-        // This enables the Android photo picker on Android 13+ (API 33+)
-        // and falls back to the traditional gallery picker on older versions
-        requestFullMetadata: false,
       );
 
       if (image != null) {
@@ -74,15 +71,13 @@ class ImageService {
     }
   }
 
-  // Pick multiple images using Android photo picker
+  // Pick multiple images
   static Future<List<File>> pickMultipleImages() async {
     try {
       final List<XFile> images = await _imagePicker.pickMultiImage(
         imageQuality: 80,
         maxWidth: 1024,
         maxHeight: 1024,
-        // This enables the Android photo picker on Android 13+ (API 33+)
-        requestFullMetadata: false,
       );
 
       return images.map((image) => File(image.path)).toList();

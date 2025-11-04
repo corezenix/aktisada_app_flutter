@@ -2,12 +2,12 @@
     <!-- Required permissions for Play Store release -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Storage permissions removed - using scoped storage and photo picker -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     
     <!-- Permissions for image picker (gallery only) -->
-    <!-- READ_MEDIA_IMAGES permission removed to comply with Google Play policy -->
-    <!-- Using Android photo picker instead -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     
     <application
         android:label="Aktisada"

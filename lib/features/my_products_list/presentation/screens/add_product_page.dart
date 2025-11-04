@@ -251,10 +251,21 @@ class _AddProductPageState extends State<AddProductPage> {
     setState(() {
       selectedCategoryId = productData['category_id']?.toString();
       selectedBrandId = productData['brand_id']?.toString();
-      selectedSize = productData['item_size'] ?? productData['size'] ?? '';
       selectedTypeId = productData['type_id']?.toString();
       selectedMaterialId = productData['material_id']?.toString();
       selectedImagePath = productData['image_path'] ?? productData['imageFile'];
+
+      // Handle item_size_id - check multiple possible fields
+      selectedSizeId =
+          productData['item_size_id']?.toString() ??
+          productData['pk_size_id']?.toString() ??
+          '';
+
+      // Handle item_size - could be a custom size string or predefined size name
+      selectedSize = productData['item_size'] ?? productData['size'] ?? '';
+
+      // If we have a size_id but no size string, we'll need to load it from the sizes list
+      // If we have a size string but no size_id, it's a custom size
 
       // Also set the display names for brand, type, and material
       selectedBrand = productData['brand_name'] ?? productData['brand'];
@@ -336,12 +347,25 @@ class _AddProductPageState extends State<AddProductPage> {
           }
         }
 
-        // Find size name by ID
-        final sizeId = productData['item_size'];
-        if (sizeId != null) {
-          selectedSize = sizeId.toString();
-          selectedSizeId = sizeId.toString();
+        // Find size name by ID - if we have a size_id, match it with the sizes list
+        if (selectedSizeId != null &&
+            selectedSizeId!.isNotEmpty &&
+            sizes.isNotEmpty) {
+          try {
+            final sizeIdInt = int.parse(selectedSizeId!);
+            final matchedSize = sizes.firstWhere(
+              (s) => s['id'] == sizeIdInt,
+              orElse: () => <String, Object>{},
+            );
+            if (matchedSize.isNotEmpty && matchedSize['name'] != null) {
+              selectedSize = matchedSize['name'].toString();
+            }
+          } catch (e) {
+            // If parsing fails, keep the existing selectedSize (which might be a custom size string)
+            print('Could not parse size_id: $selectedSizeId');
+          }
         }
+        // If no size_id but we have item_size, it's a custom size - keep it as is
       });
     }
   }
@@ -373,18 +397,31 @@ class _AddProductPageState extends State<AddProductPage> {
 
   void _handleAddProduct() {
     if (_isFormValid()) {
-      final imageFile = File(selectedImagePath!);
+      // Handle image file - check if it's a network URL or local file
+      File? imageFile;
+      if (selectedImagePath != null && selectedImagePath!.isNotEmpty) {
+        // Check if it's a network URL (starts with http) or local file path
+        if (selectedImagePath!.startsWith('http://') ||
+            selectedImagePath!.startsWith('https://')) {
+          // It's a network URL - user didn't change the image
+          // Pass null or empty - the API will keep the existing image
+          imageFile = null;
+        } else {
+          // It's a local file path - user selected a new image
+          imageFile = File(selectedImagePath!);
+        }
+      }
 
       if (_isEditMode) {
         // Update existing product
+        final productId =
+            widget.productToEdit!['id']?.toString() ??
+            widget.productToEdit!['pk_product_id']?.toString() ??
+            '';
+
         context.read<MyProductsBloc>().add(
           UpdateProductRequested(
-            productId:
-                widget.productToEdit!['id'] ??
-                (widget.productToEdit!['pk_product_id'] != null
-                    ? widget.productToEdit!['pk_product_id'].toString()
-                    : '') ??
-                '',
+            productId: productId,
             productTitle: nameController.text.trim(),
             categoryId: selectedCategoryId ?? '',
             brandId: selectedBrandId ?? '',
@@ -400,7 +437,11 @@ class _AddProductPageState extends State<AddProductPage> {
           ),
         );
       } else {
-        // Add new product
+        // Add new product - imageFile must not be null for new products
+        if (imageFile == null) {
+          // This shouldn't happen as validation requires an image
+          return;
+        }
         context.read<MyProductsBloc>().add(
           AddProductRequested(
             productTitle: nameController.text.trim(),

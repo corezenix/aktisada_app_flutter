@@ -6,9 +6,11 @@ import 'package:aktisada/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:aktisada/features/auth/presentation/bloc/auth_event.dart';
 import 'package:aktisada/features/auth/presentation/screens/login_page.dart';
 import 'package:aktisada/features/dashboard/presentation/screens/dashboard_page.dart';
+import 'package:aktisada/features/dashboard/presentation/screens/update_now_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_update_checker_plus/flutter_update_checker_plus.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -21,13 +23,40 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _checkAuthAndNavigate();
+    _checkUpdateAndNavigate();
+  }
+
+  Future<void> _checkUpdateAndNavigate() async {
+    // Keep the splash visible for at least 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    // Check for app updates first
+    try {
+      final updateChecker = UpdateStoreChecker(
+        iosAppStoreId:
+            null, // Replace with actual App Store ID (integer) when published
+        androidGooglePlayPackage: 'com.aktisada.tilemanager',
+      );
+
+      final isUpdateAvailable = await updateChecker.checkUpdate();
+      if (isUpdateAvailable) {
+        // Update is required, navigate to update screen
+        if (!mounted) return;
+        NavigationHelper.pushAndRemoveUntil(context, const UpdateNowScreen());
+        return;
+      }
+    } catch (e) {
+      // If update check fails, continue with normal flow
+      debugPrint('Update check failed: $e');
+    }
+
+    // No update required, proceed with auth check
+    await _checkAuthAndNavigate();
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Keep the splash visible for at least 2 seconds
-    Future.delayed(const Duration(seconds: 2));
-
     try {
       final storage = await LocalStorageService.getInstance();
 
@@ -53,7 +82,7 @@ class _SplashPageState extends State<SplashPage> {
             );
 
             // Wait a bit for the user data to load
-            Future.delayed(const Duration(seconds: 1));
+            await Future.delayed(const Duration(seconds: 1));
           }
         }
 

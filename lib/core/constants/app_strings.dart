@@ -20,7 +20,7 @@ class _LoginStrings {
   final String title = "Login";
   final String description = "Enter your mobile number & password to log in";
   final String mobileFieldTitle = "Mobile number";
-  final String mobileFieldHint = "9876543210";
+  final String mobileFieldHint = "Enter your mobile number";
   final String passwordFieldTitle = "Password";
   final String passwordFieldHint = "Enter password";
   final String button = "Login";
