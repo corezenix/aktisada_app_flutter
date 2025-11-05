@@ -443,7 +443,10 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         ),
       ]);
 
-      // Add image file if present
+      // Handle image: either send new file or existing image URL
+      bool imageHandled = false;
+
+      // Add image file if present (when image has changed - priority)
       if (productData['image_file'] != null &&
           productData['image_file'] != '') {
         final imageFile = productData['image_file'];
@@ -451,7 +454,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         print('   Image File Type: ${imageFile.runtimeType}');
 
         if (imageFile is File) {
-          // Handle File object
+          // Handle File object - new image selected
           formData.files.add(
             MapEntry(
               'image_file',
@@ -462,28 +465,51 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
             ),
           );
           print('   Image added as MultipartFile: ${imageFile.path}');
+          imageHandled = true;
         } else if (imageFile is String && imageFile.isNotEmpty) {
-          // Handle file path string
-          final file = File(imageFile);
-          if (await file.exists()) {
-            formData.files.add(
-              MapEntry(
-                'image_file',
-                await MultipartFile.fromFile(
-                  imageFile,
-                  filename: imageFile.split('/').last,
-                ),
-              ),
-            );
-            print('   Image added as MultipartFile from path: $imageFile');
+          // Handle file path string - check if it's a local file or URL
+          if (imageFile.startsWith('http://') ||
+              imageFile.startsWith('https://')) {
+            // It's a URL, handle it below
+            print('   Image file is a URL, will be handled as image_url');
           } else {
-            print('   Warning: Image file does not exist at path: $imageFile');
+            // It's a local file path
+            final file = File(imageFile);
+            if (await file.exists()) {
+              formData.files.add(
+                MapEntry(
+                  'image_file',
+                  await MultipartFile.fromFile(
+                    imageFile,
+                    filename: imageFile.split('/').last,
+                  ),
+                ),
+              );
+              print('   Image added as MultipartFile from path: $imageFile');
+              imageHandled = true;
+            } else {
+              print(
+                '   Warning: Image file does not exist at path: $imageFile',
+              );
+            }
           }
         } else {
           print('   Warning: Invalid image file format: $imageFile');
         }
-      } else {
-        print('   No image file provided - updating without new image');
+      }
+
+      // Add image URL if present (when image hasn't changed or image_file was a URL)
+      if (!imageHandled &&
+          productData['image_url'] != null &&
+          productData['image_url'].toString().isNotEmpty) {
+        final imageUrl = productData['image_url'].toString();
+        formData.fields.add(MapEntry('image_url', imageUrl));
+        print('   Image URL added as field: $imageUrl');
+        imageHandled = true;
+      }
+
+      if (!imageHandled) {
+        print('   No image file or URL provided - updating without new image');
       }
 
       print('   FormData fields: ${formData.fields.length}');

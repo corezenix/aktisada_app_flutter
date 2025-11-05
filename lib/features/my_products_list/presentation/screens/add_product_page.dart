@@ -399,16 +399,19 @@ class _AddProductPageState extends State<AddProductPage> {
     if (_isFormValid()) {
       // Handle image file - check if it's a network URL or local file
       File? imageFile;
+      String? imageUrl;
       if (selectedImagePath != null && selectedImagePath!.isNotEmpty) {
         // Check if it's a network URL (starts with http) or local file path
         if (selectedImagePath!.startsWith('http://') ||
             selectedImagePath!.startsWith('https://')) {
           // It's a network URL - user didn't change the image
-          // Pass null or empty - the API will keep the existing image
+          // Pass the URL to the API so it knows to keep the existing image
+          imageUrl = selectedImagePath;
           imageFile = null;
         } else {
           // It's a local file path - user selected a new image
           imageFile = File(selectedImagePath!);
+          imageUrl = null;
         }
       }
 
@@ -430,6 +433,7 @@ class _AddProductPageState extends State<AddProductPage> {
             typeId: selectedTypeId ?? '',
             quantity: quantityController.text.trim(),
             imageFile: imageFile,
+            imageUrl: imageUrl,
             materialId: selectedMaterialId ?? '',
             description: descriptionController.text.trim().isNotEmpty
                 ? descriptionController.text.trim()

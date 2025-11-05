@@ -115,7 +115,9 @@ class UpdateProductRequested extends MyProductsEvent {
   final String sizeId;
   final String typeId;
   final String quantity;
-  final File? imageFile; // Nullable - null means don't update the image
+  final File? imageFile; // Nullable - if provided, this is a new image file
+  final String?
+  imageUrl; // Nullable - if provided, this is the existing image URL
   final String? materialId;
   final String? description;
 
@@ -128,7 +130,8 @@ class UpdateProductRequested extends MyProductsEvent {
     required this.sizeId,
     required this.typeId,
     required this.quantity,
-    this.imageFile, // Optional - if null, API keeps existing image
+    this.imageFile, // Optional - if provided, user selected a new image
+    this.imageUrl, // Optional - if provided, user kept the existing image
     this.materialId,
     this.description,
   });
@@ -144,6 +147,7 @@ class UpdateProductRequested extends MyProductsEvent {
     typeId,
     quantity,
     imageFile,
+    imageUrl,
     materialId,
     description,
   ];

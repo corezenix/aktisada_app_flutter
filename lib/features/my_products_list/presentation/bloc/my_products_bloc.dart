@@ -359,6 +359,7 @@ class MyProductsBloc extends Bloc<MyProductsEvent, MyProductsState> {
         'item_size_id': event.sizeId,
         'quantity': event.quantity,
         'image_file': event.imageFile,
+        'image_url': event.imageUrl,
         'description': event.description ?? '',
       };
 
