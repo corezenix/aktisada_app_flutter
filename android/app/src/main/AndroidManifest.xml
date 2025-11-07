@@ -2,12 +2,12 @@
     <!-- Required permissions for Play Store release -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Camera permission is still needed for taking photos with camera -->
     <uses-permission android:name="android.permission.CAMERA" />
     
-    <!-- Permissions for image picker (gallery only) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Removed READ_MEDIA_IMAGES, READ_EXTERNAL_STORAGE, and WRITE_EXTERNAL_STORAGE -->
+    <!-- The app now uses Android Photo Picker (available on Android 13+) which doesn't require these permissions -->
+    <!-- This complies with Google Play's Photo and Video Permissions policy -->
     
     <application
         android:label="Aktisada"
