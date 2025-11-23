@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
             ),
           ],
           child: MaterialApp(
-            title: 'Calicult',
+            title: 'AKTISADA',
             home: const SplashPage(),
             debugShowCheckedModeBanner: false,
             theme: ThemeData(

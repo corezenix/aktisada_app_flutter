@@ -19,7 +19,8 @@ class NetworkUtils {
   }
 
   static Future<ConnectivityResult> getConnectivityStatus() async {
-    return await Connectivity().checkConnectivity();
+    List<ConnectivityResult> res = await Connectivity().checkConnectivity();
+    return res.first;
   }
 
   static String getConnectivityMessage(ConnectivityResult result) {
