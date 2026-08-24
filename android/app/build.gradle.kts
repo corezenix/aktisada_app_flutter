@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.aktisada.tilemanager"
-    compileSdk = 35
+    compileSdk = 37
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -34,8 +34,8 @@ android {
         applicationId = "com.aktisada.tilemanager"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 21
-        targetSdk = 35
+        minSdk = flutter.minSdkVersion
+        targetSdk = 37
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
